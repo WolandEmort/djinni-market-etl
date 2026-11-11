@@ -1,0 +1,29 @@
+version: 2
+
+models:
+  - name: mart_market_overview
+    description: "Analytical data mart with market competition and salary metrics."
+    columns:
+      - name: snapshot_date
+        description: "Date of the market snapshot."
+        tests:
+          - not_null
+
+      - name: category
+        description: "IT specialization category (e.g., python, java)."
+        tests:
+          - not_null
+
+      - name: experience_years
+        description: "Required years of experience."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['< 1', '1', '2', '3', '5+']
+
+      - name: work_format
+        description: "Work format (e.g., remote or all)."
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['All', 'full_remote']
