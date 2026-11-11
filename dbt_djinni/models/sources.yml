@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw_djinni
+    description: "Raw data from the Djinni scraper"
+    database: djinni-market-scrap
+    schema: public
+    tables:
+      - name: djinni_market_snapshot
+        description: "Daily snapshots of the IT labor market"
