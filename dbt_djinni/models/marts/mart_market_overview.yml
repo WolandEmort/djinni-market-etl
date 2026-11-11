@@ -19,11 +19,13 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: ['< 1', '1', '2', '3', '5+']
+              arguments:
+                values: ['< 1', '1', '2', '3', '5+']
 
       - name: work_format
         description: "Work format (e.g., remote or all)."
         tests:
           - not_null
           - accepted_values:
-              values: ['All', 'full_remote']
+              arguments:
+                values: ['All', 'full_remote']
