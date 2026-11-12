@@ -7,6 +7,6 @@ SELECT
     experience_years,
     work_format,
     COUNT(*) as records_count
-FROM {{ ref('mart_market_overview') }}
+FROM {{ ref('stg_djinni_market_snapshot') }}
 GROUP BY 1, 2, 3, 4
 HAVING COUNT(*) > 1

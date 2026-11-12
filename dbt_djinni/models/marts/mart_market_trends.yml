@@ -1,7 +1,7 @@
 version: 2
 
 models:
-  - name: mart_market_overview
+  - name: mart_market_trends
     description: "Analytical data mart with market competition and salary metrics."
     columns:
       - name: snapshot_date
