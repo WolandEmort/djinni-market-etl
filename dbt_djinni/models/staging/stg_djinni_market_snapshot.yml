@@ -1,0 +1,37 @@
+version: 2
+
+models:
+  - name: stg_djinni_market_snapshot
+    description: "Staging model for Djinni market data. Handles type casting, sort keys, and basic validation."
+    columns:
+      - name: snapshot_date
+        description: "Date of the market snapshot."
+        tests:
+          - not_null
+
+      - name: category
+        description: "IT specialization category (e.g., python, java)."
+        tests:
+          - not_null
+
+      - name: experience_years
+        description: "Required years of experience."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['< 1', '1', '2', '3', '5+']
+
+      - name: work_format
+        description: "Work format (e.g., remote or all)."
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['All', 'full_remote']
+
+      - name: candidates_count
+        description: "Number of active candidates online."
+
+      - name: jobs_count
+        description: "Number of open job positions."
