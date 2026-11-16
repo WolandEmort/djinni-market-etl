@@ -37,15 +37,20 @@ def parse_salaries_page(html: str) -> dict:
 
         expected_salary_label = cand_card.find(lambda tag: tag.name == "small" and "Середні очікування" in tag.text)
         if expected_salary_label:
-            data["candidates_expected_salary"] = expected_salary_label.find_parent("div", class_="row").find("div",
-                                                                                                             class_="col-auto").get_text(
-                strip=True).replace("\xa0", " ")
+            data["candidates_expected_salary"] = (
+                expected_salary_label.find_parent("div", class_="row")
+                .find("div", class_="col-auto")
+                .get_text(strip=True)
+                .replace("\xa0", " ")
+            )
 
         avg_pokes_label = cand_card.find(lambda tag: tag.name == "small" and "Пропозицій в середньому" in tag.text)
         if avg_pokes_label:
-            data["candidates_avg_pokes"] = avg_pokes_label.find_parent("div", class_="row").find("div",
-                                                                                                 class_="col-auto").get_text(
-                strip=True)
+            data["candidates_avg_pokes"] = (
+                avg_pokes_label.find_parent("div", class_="row")
+                .find("div", class_="col-auto")
+                .get_text(strip=True)
+            )
 
     jobs_card = soup.find("div", id="jobs_card")
     if jobs_card:
@@ -54,15 +59,20 @@ def parse_salaries_page(html: str) -> dict:
 
         jobs_salary_label = jobs_card.find(lambda tag: tag.name == "small" and "Середня вилка" in tag.text)
         if jobs_salary_label:
-            data["jobs_salary_range"] = jobs_salary_label.find_parent("div", class_="row").find("div",
-                                                                                                class_="col-auto").get_text(
-                strip=True).replace("\xa0", " ")
+            data["jobs_salary_range"] = (
+                jobs_salary_label.find_parent("div", class_="row")
+                .find("div", class_="col-auto")
+                .get_text(strip=True)
+                .replace("\xa0", " ")
+            )
 
         avg_applies_label = jobs_card.find(lambda tag: tag.name == "small" and "Відгуків в середньому" in tag.text)
         if avg_applies_label:
-            data["jobs_avg_applies"] = avg_applies_label.find_parent("div", class_="row").find("div",
-                                                                                               class_="col-auto").get_text(
-                strip=True)
+            data["jobs_avg_applies"] = (
+                avg_applies_label.find_parent("div", class_="row")
+                .find("div", class_="col-auto")
+                .get_text(strip=True)
+            )
 
     index_card = soup.find("div", id="djinni_index_card")
     if index_card:
@@ -88,23 +98,34 @@ def extract_data(exp_levels: list, work_formats: list) -> list[dict]:
     with requests.Session(impersonate="chrome120") as session:
         response = fetch_with_retry(session, BASE_URL)
         if not response:
-            logger.error("Критична помилка: не вдалося завантажити базову сторінку категорій.")
-            return []
+            raise RuntimeError("Критична помилка: не вдалося завантажити базову сторінку категорій після всіх спроб.")
 
         soup = BeautifulSoup(response.content, "html.parser")
-        categories = [opt.get("value") for opt in soup.find("select", {"name": "category"}).find_all("option") if
-                      opt.get("value")]
-        logger.info(f"Знайдено категорій: {len(categories)}")
+        category_select = soup.find("select", {"name": "category"})
+        if not category_select:
+            raise RuntimeError("Критична помилка: не знайдено список категорій у HTML-розмітці.")
+
+        categories = [opt.get("value") for opt in category_select.find_all("option") if opt.get("value")]
+        if not categories:
+            raise RuntimeError("Критична помилка: список категорій порожній.")
+
+        total = len(categories) * len(exp_levels) * len(work_formats)
+        skipped = 0
+
+        logger.info(f"Знайдено категорій: {len(categories)}. Очікувана кількість сторінок: {total}")
 
         for category in categories:
             for exp in exp_levels:
                 for wf in work_formats:
                     params = {"category": category, "exp": exp}
-                    if wf: params["work_format"] = wf
+                    if wf:
+                        params["work_format"] = wf
 
+                    # fetch_with_retry поверне None лише якщо всі max_retries спроб не вдалися
                     resp = fetch_with_retry(session, BASE_URL, params=params)
                     if not resp:
-                        logger.error(f"Пропущено сторінку: {category}, exp={exp}, wf={wf}")
+                        skipped += 1
+                        logger.error(f"Пропущено сторінку після всіх спроб ({skipped}/{total}): {category}, exp={exp}, wf={wf}")
                         continue
 
                     parsed_data = parse_salaries_page(resp.content)
@@ -119,5 +140,10 @@ def extract_data(exp_levels: list, work_formats: list) -> list[dict]:
                     results.append(row)
                     logger.info(f"Зібрано: {category} | Exp: {exp} | Format: {wf or 'All'}")
                     time.sleep(0.8)
+
+        if total > 0 and (skipped / total) > 0.05:
+            raise RuntimeError(f"Incomplete snapshot: {skipped}/{total} pages failed (>5% threshold)")
+
+        logger.info(f"Збір завершено успішно. Отримано {len(results)}/{total} сторінок (пропущено: {skipped}).")
 
     return results
