@@ -4,8 +4,6 @@ services:
     container_name: djinni_postgres
     restart: always
     environment:
-      DB_HOST: db
-      DB_PORT: 5432
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
@@ -30,6 +28,7 @@ services:
       - .env
     environment:
       DB_HOST: db
+      DB_PORT: 5432
     restart: "no"
 
 volumes:

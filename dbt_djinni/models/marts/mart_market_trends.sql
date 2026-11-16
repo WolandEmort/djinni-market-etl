@@ -17,7 +17,7 @@ current_data AS (
         jobs_count,
         cand_salary_mid,
         jobs_salary_mid,
-        ROUND(candidates_count / NULLIF(jobs_count, 0), 2) AS candidates_per_job,
+        ROUND(candidates_count::numeric / NULLIF(jobs_count, 0), 2) AS candidates_per_job
         (cand_salary_mid - jobs_salary_mid) AS salary_expectation_gap
     FROM stg_market
 )
