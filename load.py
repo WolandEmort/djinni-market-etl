@@ -1,12 +1,13 @@
 import os
 import time
+import sys
 from sqlalchemy import create_engine, text
+from sqlalchemy.engine import URL
 import pandas as pd
 from config import logger
 
 
 def load_data(df: pd.DataFrame):
-    """Завантажує трансформований DataFrame в PostgreSQL через UPSERT."""
     if df.empty:
         logger.info("Немає даних для завантаження в базу.")
         return
@@ -17,14 +18,24 @@ def load_data(df: pd.DataFrame):
     db_port = os.getenv("DB_PORT", "5432")
     db_name = os.getenv("DB_NAME")
 
-    if not all([db_user, db_password, db_name]):
+    if not all([db_user, db_password, db_name, db_host]):
         logger.error("Відсутні змінні середовища для БД (.env).")
-        return
+        sys.exit(1)
 
-    db_url = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
-    engine = create_engine(db_url)
+    try:
+        db_url = URL.create(
+            drivername="postgresql+psycopg2",
+            username=db_user,
+            password=db_password,
+            host=db_host,
+            port=db_port,
+            database=db_name
+        )
+        engine = create_engine(db_url)
+    except Exception as e:
+        logger.error(f"Помилка створення URL бази даних: {e}")
+        sys.exit(1)
 
-    # Генерація унікального імені для тимчасової таблиці
     temp_table = f"temp_djinni_snapshot_{int(time.time())}"
 
     try:
@@ -74,3 +85,4 @@ def load_data(df: pd.DataFrame):
 
     except Exception as e:
         logger.error("Помилка при виконанні Load-стадії БД.", exc_info=True)
+        sys.exit(1)

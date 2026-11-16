@@ -1,9 +1,9 @@
 import argparse
+import sys
 from config import logger
 from extract import extract_data
 from transform import transform_data
 from load import load_data
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Djinni Market ETL Pipeline")
@@ -11,12 +11,10 @@ def parse_args():
     parser.add_argument("--format", type=str, choices=["all", "remote", "both"], default="both", help="Формат роботи")
     return parser.parse_args()
 
-
 def get_work_formats(format_arg: str) -> list:
     if format_arg == "all": return [""]
     if format_arg == "remote": return ["full_remote"]
     return ["", "full_remote"]
-
 
 def main():
     args = parse_args()
@@ -28,12 +26,13 @@ def main():
 
     logger.info(f"Старт ETL пайплайну. Exp: {exp_levels}, Формати: {work_formats}")
 
-    raw_data = extract_data(exp_levels, work_formats)
-
-    transformed_df = transform_data(raw_data)
-
-    load_data(transformed_df)
-
+    try:
+        raw_data = extract_data(exp_levels, work_formats)
+        transformed_df = transform_data(raw_data)
+        load_data(transformed_df)
+    except Exception as e:
+         logger.critical(f"ETL пайплайн завершився з критичною помилкою: {e}")
+         sys.exit(1)
 
 if __name__ == "__main__":
     main()
