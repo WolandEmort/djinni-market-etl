@@ -33,19 +33,28 @@ def transform_data(raw_data: list[dict]) -> pd.DataFrame:
 
     df = pd.DataFrame(raw_data)
 
+    diff_cols = ["candidates_diff", "jobs_diff", "index_diff"]
+    for col in diff_cols:
+        if col in df.columns:
+            df[col] = (
+                df[col]
+                .astype(str)
+                .str.replace("↑", "+", regex=False)
+                .str.replace("↓", "-", regex=False)
+                .str.replace("−", "-", regex=False)
+                .str.replace(",", "", regex=False)
+                .str.strip()
+            )
+
     numeric_cols = [
-        "candidates_count", "jobs_count", "candidates_avg_pokes",
-        "jobs_avg_applies", "djinni_index", "index_diff",
+        "candidates_count", "candidates_diff", "candidates_avg_pokes",
+        "jobs_count", "jobs_diff", "jobs_avg_applies",
+        "djinni_index", "index_diff",
         "index_applies_total", "index_pokes_total"
     ]
     for col in numeric_cols:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
-
-    if "jobs_count" in df.columns:
-        df.loc[df["jobs_count"] == 0, "jobs_count"] = np.nan
-    if "candidates_count" in df.columns:
-        df.loc[df["candidates_count"] == 0, "candidates_count"] = np.nan
 
     if "candidates_expected_salary" in df.columns:
         df[["cand_salary_min", "cand_salary_max", "cand_salary_mid"]] = (

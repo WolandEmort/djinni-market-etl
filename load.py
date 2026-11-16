@@ -9,8 +9,8 @@ from config import logger
 
 def load_data(df: pd.DataFrame):
     if df.empty:
-        logger.info("Немає даних для завантаження в базу.")
-        return
+        logger.error("Отримано порожній DataFrame. Завантаження скасовано.")
+        sys.exit(1)
 
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
@@ -76,7 +76,8 @@ def load_data(df: pd.DataFrame):
                     cand_salary_mid = EXCLUDED.cand_salary_mid,
                     jobs_salary_min = EXCLUDED.jobs_salary_min,
                     jobs_salary_max = EXCLUDED.jobs_salary_max,
-                    jobs_salary_mid = EXCLUDED.jobs_salary_mid;
+                    jobs_salary_mid = EXCLUDED.jobs_salary_mid,
+                    updated_at = CURRENT_TIMESTAMP;
             """)
             conn.execute(upsert_query)
             conn.execute(text(f"DROP TABLE {temp_table};"))

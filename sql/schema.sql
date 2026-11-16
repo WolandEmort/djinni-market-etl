@@ -1,21 +1,24 @@
-CREATE TABLE IF NOT EXISTS djinni_market_data (
-    id SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS djinni_market_snapshot (
     snapshot_date DATE NOT NULL,
     category VARCHAR(255) NOT NULL,
     experience_years VARCHAR(50) NOT NULL,
     work_format VARCHAR(50) NOT NULL,
     candidates_count INTEGER,
+    candidates_diff INTEGER,
+    candidates_avg_pokes NUMERIC(5,2),
     jobs_count INTEGER,
-    average_salary INTEGER,
-
+    jobs_diff INTEGER,
+    jobs_avg_applies NUMERIC(5,2),
     djinni_index NUMERIC(5,2),
     index_diff NUMERIC(5,2),
-    candidates_avg_pokes NUMERIC(5,2),
-    jobs_avg_applies NUMERIC(5,2),
-    candidates_diff INTEGER,
-    jobs_diff INTEGER,
-
+    index_applies_total INTEGER,
+    index_pokes_total INTEGER,
+    cand_salary_min NUMERIC,
+    cand_salary_max NUMERIC,
+    cand_salary_mid NUMERIC,
+    jobs_salary_min NUMERIC,
+    jobs_salary_max NUMERIC,
+    jobs_salary_mid NUMERIC,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT uq_market_snapshot UNIQUE (snapshot_date, category, experience_years, work_format)
+    PRIMARY KEY (snapshot_date, category, experience_years, work_format)
 );
