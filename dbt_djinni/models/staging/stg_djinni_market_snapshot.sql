@@ -7,8 +7,8 @@ WITH raw_data AS (
 
 SELECT
     CAST(snapshot_date AS DATE) AS snapshot_date,
-    category,
-    experience_years,
+    CAST(category AS VARCHAR(255)) AS category,
+    CAST(experience_years AS VARCHAR(50)) AS experience_years,
 
     CASE experience_years
         WHEN '< 1' THEN 0
@@ -19,16 +19,28 @@ SELECT
         ELSE NULL
     END AS experience_sort_key,
 
-    work_format,
+    CAST(work_format AS VARCHAR(50)) AS work_format,
 
-    candidates_count,
-    jobs_count,
-    cand_salary_min,
-    cand_salary_mid,
-    cand_salary_max,
-    jobs_salary_min,
-    jobs_salary_mid,
-    jobs_salary_max,
+    CAST(candidates_count AS INTEGER) AS candidates_count,
+    CAST(candidates_diff AS INTEGER) AS candidates_diff,
+    CAST(candidates_avg_pokes AS NUMERIC(5,2)) AS candidates_avg_pokes,
 
-    updated_at
+    CAST(jobs_count AS INTEGER) AS jobs_count,
+    CAST(jobs_diff AS INTEGER) AS jobs_diff,
+    CAST(jobs_avg_applies AS NUMERIC(5,2)) AS jobs_avg_applies,
+
+    CAST(djinni_index AS NUMERIC(5,2)) AS djinni_index,
+    CAST(index_diff AS NUMERIC(5,2)) AS index_diff,
+    CAST(index_applies_total AS INTEGER) AS index_applies_total,
+    CAST(index_pokes_total AS INTEGER) AS index_pokes_total,
+
+    CAST(cand_salary_min AS NUMERIC) AS cand_salary_min,
+    CAST(cand_salary_mid AS NUMERIC) AS cand_salary_mid,
+    CAST(cand_salary_max AS NUMERIC) AS cand_salary_max,
+
+    CAST(jobs_salary_min AS NUMERIC) AS jobs_salary_min,
+    CAST(jobs_salary_mid AS NUMERIC) AS jobs_salary_mid,
+    CAST(jobs_salary_max AS NUMERIC) AS jobs_salary_max,
+
+    CAST(updated_at AS TIMESTAMP) AS updated_at
 FROM raw_data

@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: djinni_raw
+  - name: raw_djinni
     schema: public
     loader: python_etl
     loaded_at_field: updated_at
