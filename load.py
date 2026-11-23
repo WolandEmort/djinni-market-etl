@@ -15,8 +15,9 @@ def load_data(df: pd.DataFrame):
     db_user = os.getenv("DB_USER")
     db_password = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST", "localhost")
-    db_port = os.getenv("DB_PORT", "5432")
+    db_port = int(os.getenv("DB_PORT", "5432"))
     db_name = os.getenv("DB_NAME")
+    db_sslmode = os.getenv("DB_SSLMODE", "require")
 
     if not all([db_user, db_password, db_name, db_host]):
         logger.error("Відсутні змінні середовища для БД (.env).")
@@ -29,9 +30,10 @@ def load_data(df: pd.DataFrame):
             password=db_password,
             host=db_host,
             port=db_port,
-            database=db_name
+            database=db_name,
+            query={"sslmode": db_sslmode},
         )
-        engine = create_engine(db_url)
+        engine = create_engine(db_url, pool_pre_ping=True)
     except Exception as e:
         logger.error(f"Помилка створення URL бази даних: {e}")
         sys.exit(1)
