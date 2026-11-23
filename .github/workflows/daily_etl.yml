@@ -1,0 +1,44 @@
+name: Daily Djinni ETL & dbt
+
+on:
+  schedule:
+    # 03:00 UTC (05:00 UA)
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-etl-and-dbt:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      DB_HOST: ${{ secrets.DB_HOST }}
+      DB_PORT: ${{ secrets.DB_PORT }}
+      DB_NAME: ${{ secrets.DB_NAME }}
+      DB_USER: ${{ secrets.DB_USER }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      DB_SSLMODE: ${{ secrets.DB_SSLMODE }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Python ETL pipeline
+        run: python main.py
+
+      - name: Run dbt build (models + tests)
+        run: dbt build --project-dir dbt_djinni --profiles-dir dbt_djinni
+
+      - name: Check dbt source freshness
+        run: dbt source freshness --project-dir dbt_djinni --profiles-dir dbt_djinni
