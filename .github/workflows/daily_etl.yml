@@ -9,7 +9,7 @@ on:
 jobs:
   run-etl-and-dbt:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
 
     env:
       DB_HOST: ${{ secrets.DB_HOST }}
