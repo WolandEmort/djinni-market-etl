@@ -28,7 +28,20 @@ def fetch_with_retry(session, url, params=None, max_retries=3, delay=1.5):
 
 def parse_salaries_page(html: str) -> dict:
     soup = BeautifulSoup(html, "html.parser")
-    data = {}
+    data = {
+        "candidates_count": None,
+        "candidates_diff": None,
+        "candidates_expected_salary": None,
+        "candidates_avg_pokes": None,
+        "jobs_count": None,
+        "jobs_diff": None,
+        "jobs_salary_range": None,
+        "jobs_avg_applies": None,
+        "djinni_index": None,
+        "index_diff": None,
+        "index_applies_total": None,
+        "index_pokes_total": None,
+    }
 
     cand_card = soup.find("div", id="candidates_card")
     if cand_card:
@@ -95,10 +108,19 @@ def extract_data(exp_levels: list, work_formats: list) -> list[dict]:
     snapshot_date = datetime.now().date().isoformat()
     results = []
 
-    with requests.Session(impersonate="chrome120") as session:
+    with requests.Session(
+        impersonate="chrome120",
+        headers={"Accept-Language": "uk-UA,uk;q=0.9"},
+        cookies={"django_language": "uk"},
+    ) as session:
         response = fetch_with_retry(session, BASE_URL)
         if not response:
             raise RuntimeError("Критична помилка: не вдалося завантажити базову сторінку категорій після всіх спроб.")
+
+        if "Пропозицій в середньому" not in response.text:
+            raise RuntimeError(
+                "Критична помилка: сторінка повернулася не українською мовою або змінилася HTML-розмітка Djinni."
+            )
 
         soup = BeautifulSoup(response.content, "html.parser")
         category_select = soup.find("select", {"name": "category"})
