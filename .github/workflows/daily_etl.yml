@@ -2,8 +2,8 @@ name: Daily Djinni ETL & dbt
 
 on:
   schedule:
-    # 03:00 UTC (05:00 UA)
-    - cron: '0 3 * * *'
+    # 03:23 UTC (05:23 UA)
+    - cron: '23 3 * * *'
   workflow_dispatch:
 
 jobs:
